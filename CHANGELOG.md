@@ -2,7 +2,7 @@
 
 - [955f76b](https://github.com/andygodish/image-caddy/-/commit/955f76b64137f2bd77a80fae2698d02c8df7b18f) fix: broken dockerfile Caddyfile ref
 
-## 2.11.4-1 - 2026-09-07
+## 2.11.4-1 - 2026-09-07 (Broken)
 
 - [5b5f528](https://github.com/andygodish/image-caddy/-/commit/5b5f52868dfa2dbeb07e9ca97ff642dbd8d2e699) chore: renovate config, makefile for renovate testing
 - [b286460](https://github.com/andygodish/image-caddy/-/commit/b286460140fd96a99a787d7a153446b1f0966d3b) docs: initial changelog
