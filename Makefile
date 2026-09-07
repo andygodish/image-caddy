@@ -19,10 +19,11 @@ HTTP_PORT       ?= 80
 HTTPS_PORT      ?= 443
 PUID            ?= 10005
 PGID            ?= 10005
+RENOVATE_IMAGE  ?= renovate/renovate:latest
 
 .DEFAULT_GOAL := help
 
-.PHONY: verify-env build build-multiarch up run stop down restart logs status ps verify-ports fix-permissions test help
+.PHONY: verify-env build build-multiarch up run stop down restart logs status ps verify-ports fix-permissions test renovate-validate renovate-dry-run help
 
 verify-env:
 	@if [ ! -f version.txt ]; then \
@@ -105,6 +106,21 @@ test: verify-env
 		validate --config /etc/caddy/Caddyfile --adapter caddyfile
 	@echo "Internal validation passed."
 
+renovate-validate:
+	docker run --rm \
+		-v $(REPO_ROOT):/usr/src/app \
+		-w /usr/src/app \
+		$(RENOVATE_IMAGE) \
+		renovate-config-validator
+
+renovate-dry-run:
+	docker run --rm \
+		-v $(REPO_ROOT):/usr/src/app \
+		-w /usr/src/app \
+		-e LOG_LEVEL=debug \
+		$(RENOVATE_IMAGE) \
+		renovate --platform=local --dry-run=lookup --onboarding=false --require-config=optional
+
 help:
 	@echo "Caddy Reverse Proxy Build System"
 	@echo ""
@@ -117,3 +133,5 @@ help:
 	@echo "  make logs             Stream live Caddy logs"
 	@echo "  make status           View operational health and port bindings"
 	@echo "  make test             Query Caddy and validate the bundled Caddyfile"
+	@echo "  make renovate-validate Validate renovate.json with Renovate"
+	@echo "  make renovate-dry-run  Run Renovate local lookup dry-run"

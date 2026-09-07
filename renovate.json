@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^Dockerfile$/",
+        "/^README\\.md$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+ARG CADDY_VERSION=\\\"(?<currentValue>[^\\\"]+)\\\"",
+        "\\| Base image \\| `caddy:(?<currentValue>[^`]+)` \\|"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "caddy",
+      "versioningTemplate": "docker"
+    }
+  ]
+}
