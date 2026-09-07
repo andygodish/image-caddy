@@ -1,0 +1,17 @@
+services:
+  caddy:
+    image: ghcr.io/andygodish/caddy:v2.11.4-0
+    pull_policy: never
+    container_name: caddy
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_config:/config
+      - caddy_data:/data
+    ports:
+      - "80:8080"
+      - "443:8443"
+
+volumes:
+  caddy_config:
+  caddy_data:

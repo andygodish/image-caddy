@@ -1,0 +1,20 @@
+{
+	http_port 8080
+	https_port 8443
+	admin off
+}
+
+:8080 {
+	respond /health "ok" 200
+	respond "Caddy reverse proxy is running." 200
+}
+
+# Proxmox example:
+#
+# proxmox.home.arpa {
+# 	reverse_proxy https://192.168.1.10:8006 {
+# 		transport http {
+# 			tls_insecure_skip_verify
+# 		}
+# 	}
+# }

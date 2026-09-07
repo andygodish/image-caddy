@@ -1,0 +1,151 @@
+name: Release (upver)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+env:
+  IMAGE_NAME: ${{ github.repository_owner }}/caddy
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      is_release_merge: ${{ steps.classify.outputs.is_release_merge }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Classify push
+        id: classify
+        run: |
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "is_release_merge=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if git diff --name-only "$BEFORE" "$AFTER" | grep -qx "version.txt"; then
+            echo "is_release_merge=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_release_merge=false" >> $GITHUB_OUTPUT
+          fi
+
+  bump-and-pr:
+    runs-on: ubuntu-latest
+    needs: classify
+    if: ${{ needs.classify.outputs.is_release_merge != 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Sync pre-existing release files
+        run: |
+          git fetch origin release/upver:release/upver || true
+          git checkout release/upver -- CHANGELOG.md version.txt || true
+
+      - name: Install upver
+        run: |
+          curl -fsSL -o /usr/local/bin/upver \
+            https://github.com/andygodish/upver/releases/download/v0.0.3/upver-linux-amd64
+          chmod +x /usr/local/bin/upver
+          upver --help >/dev/null || true
+
+      - name: Run upver (apply + changelog)
+        run: |
+          upver --apply --changelog
+
+      - name: Create/Update release PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release/upver
+          title: "chore(release): update version.txt + changelog"
+          commit-message: "chore(release): update version.txt + changelog"
+          labels: |
+            release
+          add-paths: |
+            version.txt
+            CHANGELOG.md
+
+  tag-release:
+    runs-on: ubuntu-latest
+    needs: classify
+    if: ${{ needs.classify.outputs.is_release_merge == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: ver
+        run: |
+          RAW_VERSION=$(cat version.txt)
+          VERSION="${RAW_VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "v_version=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.ver.outputs.v_version }}"
+          git push origin "${{ steps.ver.outputs.v_version }}"
+
+  build-and-push:
+    needs: classify
+    runs-on: ubuntu-latest
+    if: ${{ needs.classify.outputs.is_release_merge == 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: ver
+        run: |
+          RAW_VERSION=$(cat version.txt)
+          VERSION="${RAW_VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "v_version=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION (Tag: v$VERSION)"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.ver.outputs.v_version }}
+            ghcr.io/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

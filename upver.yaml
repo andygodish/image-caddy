@@ -1,0 +1,12 @@
+version:
+  file: version.txt
+  pattern: '(?s)(.*)'
+  group: 1
+
+upstream:
+  file: Dockerfile
+  pattern: 'ARG CADDY_VERSION="([^"\n]+)"'
+  group: 1
+
+changelog:
+  file: CHANGELOG.md
