@@ -17,7 +17,7 @@ ENV XDG_DATA_HOME=/data
 RUN mkdir -p /config/caddy /data/caddy && \
     chown -R 10005:10005 /config /data /etc/caddy
 
-COPY --chown=10005:10005 Caddyfile /etc/caddy/Caddyfile
+COPY --chown=10005:10005 Caddyfile.example /etc/caddy/Caddyfile
 COPY --chown=10005:10005 version.txt /usr/local/share/version.txt
 
 USER 10005:10005
