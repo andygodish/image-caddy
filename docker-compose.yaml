@@ -1,7 +1,7 @@
 services:
   caddy:
     image: ghcr.io/andygodish/caddy:v2.11.4-2
-    pull_policy: never
+    pull_policy: always
     container_name: caddy
     restart: unless-stopped
     volumes:
