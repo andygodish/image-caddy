@@ -8,7 +8,7 @@ This image uses the maintained upstream Caddy image and applies the local homela
 
 | Requirement | Value |
 | --- | --- |
-| Base image | `caddy:2.11.4-alpine` |
+| Base image | `caddy:2.11.7-alpine` |
 | Runtime UID/GID | `10005:10005` |
 | Config directory | `/config` |
 | Data directory | `/data` |
