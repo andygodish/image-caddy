@@ -3,7 +3,7 @@
 # ==============================================================================
 
 # renovate: datasource=docker depName=caddy
-ARG CADDY_VERSION="2.11.4-alpine"
+ARG CADDY_VERSION="2.11.7-alpine"
 
 FROM caddy:${CADDY_VERSION}
 
