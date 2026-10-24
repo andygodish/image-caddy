@@ -1,3 +1,7 @@
+## 2.11.7-2 - 2026-10-24
+
+- [97f082f](https://github.com/andygodish/image-caddy/-/commit/97f082f286504c894c134f3034fc4fa0c9613fa8) feat: honor persistent Compose overlays and create proxy network on startup
+
 ## 2.11.7-1 - 2026-10-24
 
 - [1e45491](https://github.com/andygodish/image-caddy/-/commit/1e45491cd6b0ae8f16a0202ab14e51373759e7f4) feat: add optional shared-network integration for Pi-hole
