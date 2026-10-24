@@ -1,3 +1,7 @@
+## 2.11.7-0 - 2026-10-24
+
+- [3f09650](https://github.com/andygodish/image-caddy/-/commit/3f096507043eba333e02150e6ec94dc1e9c6a52d) chore(deps): update caddy docker tag to v2.11.7 (#8)
+
 ## 2.11.4-3 - 2026-09-08
 
 - [71565aa](https://github.com/andygodish/image-caddy/-/commit/71565aa871c1e589442a6ce257ece73259f2bdc1) empty
