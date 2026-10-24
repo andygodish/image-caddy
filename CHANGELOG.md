@@ -1,3 +1,7 @@
+## 2.11.7-3 - 2026-10-24
+
+- [8524fdf](https://github.com/andygodish/image-caddy/-/commit/8524fdfbb0d93a9129c23eccbb585473b873d85b) chore(deps): update ghcr.io/andygodish/caddy docker tag to v2.11.7-1 (#13)
+
 ## 2.11.7-2 - 2026-10-24
 
 - [97f082f](https://github.com/andygodish/image-caddy/-/commit/97f082f286504c894c134f3034fc4fa0c9613fa8) feat: honor persistent Compose overlays and create proxy network on startup
