@@ -1,10 +1,6 @@
-## 2.11.7-2 - 2026-10-24
-
-- [1e45491](https://github.com/andygodish/image-caddy/-/commit/1e45491cd6b0ae8f16a0202ab14e51373759e7f4) feat: add optional shared-network integration for Pi-hole
-- [1e88508](https://github.com/andygodish/image-caddy/-/commit/1e88508d2b8a1923dd8cc139c44f850209f96448) chore(deps): update ghcr.io/andygodish/caddy docker tag to v2.11.7-0 (#10)
-
 ## 2.11.7-1 - 2026-10-24
 
+- [1e45491](https://github.com/andygodish/image-caddy/-/commit/1e45491cd6b0ae8f16a0202ab14e51373759e7f4) feat: add optional shared-network integration for Pi-hole
 - [1e88508](https://github.com/andygodish/image-caddy/-/commit/1e88508d2b8a1923dd8cc139c44f850209f96448) chore(deps): update ghcr.io/andygodish/caddy docker tag to v2.11.7-0 (#10)
 
 ## 2.11.7-0 - 2026-10-24
