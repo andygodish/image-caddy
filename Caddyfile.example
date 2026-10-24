@@ -18,3 +18,10 @@
 # 		}
 # 	}
 # }
+
+# Pi-hole example (both projects must join the homelab-proxy network):
+#
+# pihole.home.arpa {
+# 	tls internal
+# 	reverse_proxy pihole-new:80
+# }
