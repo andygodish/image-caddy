@@ -13,7 +13,7 @@ REPO_ROOT       := $(shell pwd)
 
 PLATFORMS       ?= linux/amd64,linux/arm64
 
-COMPOSE_FILE    := $(shell test -f docker-compose.yaml && echo docker-compose.yaml || echo docker-compose.yml)
+COMPOSE         := docker compose
 CONTAINER_NAME  := caddy
 HTTP_PORT       ?= 80
 HTTPS_PORT      ?= 443
@@ -23,7 +23,7 @@ RENOVATE_IMAGE  ?= renovate/renovate:latest
 
 .DEFAULT_GOAL := help
 
-.PHONY: verify-env build build-multiarch up run stop down restart logs status ps verify-ports fix-permissions test renovate-validate renovate-dry-run help
+.PHONY: config proxy-network verify-env build build-multiarch up run stop down restart logs status ps verify-ports fix-permissions test renovate-validate renovate-dry-run help
 
 verify-env:
 	@if [ ! -f version.txt ]; then \
@@ -53,26 +53,26 @@ build-multiarch: verify-env
 		$(REPO_ROOT)
 	@echo "Multi-arch build successfully pushed to GHCR!"
 
-up: build verify-ports fix-permissions
+up: build proxy-network verify-ports fix-permissions
 	@echo "Running standalone Caddy reverse proxy stack..."
-	docker compose -f $(COMPOSE_FILE) up -d --force-recreate --remove-orphans
+	$(COMPOSE) up -d --force-recreate --remove-orphans
 	@echo "Caddy is running on http://127.0.0.1:$(HTTP_PORT) and https://127.0.0.1:$(HTTPS_PORT). Run 'make status' to verify health."
 
 run: up
 
 stop down:
 	@echo "Safely bringing down Caddy reverse proxy stack..."
-	docker compose -f $(COMPOSE_FILE) down
+	$(COMPOSE) down
 
 restart:
 	@echo "Gracefully restarting Caddy reverse proxy stack..."
-	docker compose -f $(COMPOSE_FILE) restart
+	$(COMPOSE) restart
 
 logs:
-	docker compose -f $(COMPOSE_FILE) logs -f --tail=100
+	$(COMPOSE) logs -f --tail=100
 
 status ps:
-	docker compose -f $(COMPOSE_FILE) ps
+	$(COMPOSE) ps
 
 verify-ports:
 	@echo "Running preflight network checks..."
@@ -135,3 +135,12 @@ help:
 	@echo "  make test             Query Caddy and validate the bundled Caddyfile"
 	@echo "  make renovate-validate Validate renovate.json with Renovate"
 	@echo "  make renovate-dry-run  Run Renovate local lookup dry-run"
+
+# Compose reads COMPOSE_FILE from .env; standalone users need no proxy network.
+config:
+	$(COMPOSE) config --quiet
+
+proxy-network: config
+	@if $(COMPOSE) config --networks | grep -qx proxy; then \
+		docker network inspect homelab-proxy >/dev/null 2>&1 || docker network create homelab-proxy; \
+	fi

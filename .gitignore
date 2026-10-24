@@ -1,2 +1,4 @@
 Caddyfile
 !Caddyfile.example
+
+.env
