@@ -23,7 +23,7 @@ RENOVATE_IMAGE  ?= renovate/renovate:latest
 
 .DEFAULT_GOAL := help
 
-.PHONY: config proxy-network verify-env build build-multiarch up run stop down restart logs status ps verify-ports fix-permissions test renovate-validate renovate-dry-run help
+.PHONY: config validate-config pull proxy-network verify-env build build-multiarch up run stop down restart logs status ps verify-ports fix-permissions test renovate-validate renovate-dry-run help
 
 verify-env:
 	@if [ ! -f version.txt ]; then \
@@ -53,9 +53,9 @@ build-multiarch: verify-env
 		$(REPO_ROOT)
 	@echo "Multi-arch build successfully pushed to GHCR!"
 
-up: build proxy-network verify-ports fix-permissions
+up: proxy-network validate-config verify-ports fix-permissions
 	@echo "Running standalone Caddy reverse proxy stack..."
-	$(COMPOSE) up -d --force-recreate --remove-orphans
+	$(COMPOSE) up -d --pull missing
 	@echo "Caddy is running on http://127.0.0.1:$(HTTP_PORT) and https://127.0.0.1:$(HTTPS_PORT). Run 'make status' to verify health."
 
 run: up
@@ -64,9 +64,9 @@ stop down:
 	@echo "Safely bringing down Caddy reverse proxy stack..."
 	$(COMPOSE) down
 
-restart:
-	@echo "Gracefully restarting Caddy reverse proxy stack..."
-	$(COMPOSE) restart
+restart: proxy-network validate-config fix-permissions
+	@echo "Recreating Caddy with current configuration and cached image..."
+	$(COMPOSE) up -d --no-deps --pull never --force-recreate caddy
 
 logs:
 	$(COMPOSE) logs -f --tail=100
@@ -127,9 +127,12 @@ help:
 	@echo "Usage:"
 	@echo "  make build            Build local architecture Caddy image"
 	@echo "  make build-multiarch  Build and push multi-platform images via Buildx"
-	@echo "  make up               Build and run the standalone Caddy compose stack"
+	@echo "  make config           Validate Compose and require a local Caddyfile"
+	@echo "  make validate-config  Validate the mounted Caddyfile using the deployment image"
+	@echo "  make pull             Pull the published Compose image"
+	@echo "  make up               Validate and start the published Compose image"
 	@echo "  make down             Safely stop and remove containers (keeps volumes intact)"
-	@echo "  make restart          Gracefully restart the Caddy service"
+	@echo "  make restart          Validate and recreate Caddy; preserves named volumes"
 	@echo "  make logs             Stream live Caddy logs"
 	@echo "  make status           View operational health and port bindings"
 	@echo "  make test             Query Caddy and validate the bundled Caddyfile"
@@ -138,7 +141,14 @@ help:
 
 # Compose reads COMPOSE_FILE from .env; standalone users need no proxy network.
 config:
+	@test -f Caddyfile || { echo "Create a local Caddyfile first; see Caddyfile.example."; exit 1; }
 	$(COMPOSE) config --quiet
+
+pull: config
+	$(COMPOSE) pull
+
+validate-config: config
+	$(COMPOSE) run --rm --no-deps --pull missing --entrypoint caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
 proxy-network: config
 	@if $(COMPOSE) config --networks | grep -qx proxy; then \

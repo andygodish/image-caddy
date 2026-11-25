@@ -15,20 +15,39 @@ This image uses the maintained upstream Caddy image and applies the local homela
 | HTTP port | `8080` in container, `80` on host |
 | HTTPS port | `8443` in container, `443` on host |
 | Config file | local `./Caddyfile` mounted to `/etc/caddy/Caddyfile` |
-| Compose image | `ghcr.io/andygodish/caddy:v2.11.4-0` |
+| Compose image | Pinned GHCR release in `docker-compose.yaml` |
 
 ## Operational Guide
 
 Run these commands inside the `image-caddy` directory.
 
 ```bash
+cp Caddyfile.example Caddyfile # First deployment only; edit routes before starting.
+make config
+make pull
+make validate-config
 make up
 make status
 make logs
 make down
 ```
 
-`make up` builds the local wrapper image and launches the standalone `docker-compose.yaml` service. Compose mounts the local untracked `Caddyfile` over `/etc/caddy/Caddyfile` and uses Docker named volumes for `/config` and `/data`, preserving Caddy state and certificates across restarts.
+`make up` validates the local Caddyfile and launches the published image pinned in
+`docker-compose.yaml`; it does not build an image. Compose mounts the local
+untracked `Caddyfile` over `/etc/caddy/Caddyfile` and uses Docker named volumes
+for `/config` and `/data`, preserving Caddy state and certificates across restarts.
+`make validate-config` uses a temporary container with the same configuration
+and volumes, without publishing ports. It may initialize persistent TLS state
+and pulls the deployment image if it is missing.
+
+After editing configuration, use `make restart`. It validates first, then
+recreates only Caddy with the cached deployment image, applying Compose and
+environment changes while preserving named volumes. There is a brief proxy
+interruption; this is not a zero-downtime reload. The example disables Caddy's
+admin API, so this workflow does not use API-based reloads.
+
+For an image update, change the Compose pin, run `make pull`, then
+`make restart`. `make build` remains available explicitly for image development.
 
 The default Caddyfile exposes a simple health endpoint:
 
@@ -38,12 +57,15 @@ curl http://127.0.0.1/health
 
 ## Adding Homelab Routes
 
-Create a local `Caddyfile` from the tracked example, edit it for the target host, and restart:
+For the first deployment, create a local `Caddyfile` from the tracked example
+and edit it for the target host. Preserve an existing Caddyfile on later updates:
 
 ```bash
 cp Caddyfile.example Caddyfile
 make up
 ```
+
+For subsequent route edits, run `make restart`.
 
 Example Proxmox route:
 
