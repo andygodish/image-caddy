@@ -1,6 +1,6 @@
 services:
   caddy:
-    image: ghcr.io/andygodish/caddy:v2.11.7-1
+    image: ghcr.io/andygodish/caddy:v2.11.7-2
     pull_policy: always
     container_name: caddy
     restart: unless-stopped
