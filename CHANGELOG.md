@@ -1,3 +1,12 @@
+## 2.11.9-2 - 2026-11-27
+
+- [8ded11b](https://github.com/andygodish/image-caddy/-/commit/8ded11bd76e4cdb77a7b3344ef26a26b237c1a89) chore(deps): update ghcr.io/andygodish/caddy docker tag to v2.11.9-0 (#18)
+- [8057452](https://github.com/andygodish/image-caddy/-/commit/80574524c1c843e446001fa06b70800bc05bb202) chore: makefile update
+
+## 2.11.9-1 - 2026-11-25
+
+- [8057452](https://github.com/andygodish/image-caddy/-/commit/80574524c1c843e446001fa06b70800bc05bb202) chore: makefile update
+
 ## 2.11.9-0 - 2026-11-25
 
 - [44e8ff8](https://github.com/andygodish/image-caddy/-/commit/44e8ff859e260ddf53e893da2708f72bf8333613) chore(deps): update caddy docker tag to v2.11.9 (#16)
